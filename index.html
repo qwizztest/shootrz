@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>ShootOut</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+      <link href='https://fonts.googleapis.com/css?family=VT323|Rammetto+One|Lato:100' rel='stylesheet' type='text/css'>
+
+      <style type="text/css">
+        html, body {
+          height: 100%;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          display: table;
+          font-weight: 100;
+          font-family: 'VT323';
+        }
+
+        .container {
+          text-align: center;
+          display: table-cell;
+          vertical-align: middle;
+        }
+
+        .content {
+          text-align: center;
+          display: inline-block;
+        }
+
+        .title {
+          font-size: 96px;
+        }
+
+        .off {
+          display: none;
+        }
+
+        .talkText {
+          font-size: 1.3em;
+          font-weight: 900;
+        } 
+
+        .talkText, #name_div h1 {
+          font-family: 'Lato';
+        }
+
+
+
+        #billboard, #billboard2{
+          font-family: 'Lato';
+          margin-top: 2em;
+
+        }
+
+        #actionbox{
+          display: none;
+        }
+
+
+      </style>
+    </head>
+    <body>
+      <div id='intro' class="container">
+          <div class="content">
+            <div class="title">ShootOut</div>
+            <div class='talkText'>
+              <p>Type in your name or leave it blank to play off the grid.</p>
+            </div>
+            <form name='setup' style="margin-bottom: 2em;">
+            <div id='name_div'>
+              <h1>Name</h1>
+              <input id='name' type='text' name='name'></input>
+            </div>
+          </form>
+            <button onclick="sconnect()">PLAY</button>
+          </div>
+      </div>
+      <div id='actionbox' class='container'>
+        <div class='content'>
+          <form name='setup' style="margin-bottom: 2em;">
+            <div id='arena'>
+              <h1>Arena</h1>
+              <!--<input id='room' type='text' name='room' value='test_room'></input> -->
+            </div>
+          </form>
+
+
+          <button id='randomBtn' onclick="random()">Random ShootOut</button>
+          <button id='privateBtn' onclick="alert('route doesnt exist yet...')">Private ShootOut</button>
+          
+          <div id='billboard'></div>
+           <div id='billboard2'></div>
+          <button id='shootBtn' onclick="shoot()" style='display:none;'>Shoot!</button>
+          <button id='resetBtn' onclick="reset()" style='display:none;'>Rematch???</button>
+          <button id='resetBtn2' onclick="reset2()" style='display:none;'>Reset</button>
+          
+          <div class='off'>
+            <button id='tst' onclick="tst()" style=''>reset button</button>
+            <button id='join' onclick="join()" style=''>join</button>
+            <br><br>
+            <div id='rlist'><select id='rSelect'></select></div>
+          </div>
+
+
+        </div>
+      </div>
+
+      <script src="http://68.40.225.105:3000/socket.io/socket.io.js"></script>
+      <script>
+      
+      var socket;
+      var shooterName;
+      var rSel = document.getElementById("rSelect");
+
+      
+      function sconnect(){
+
+        socket = io.connect();
+  
+
+        socket.on('connect', function () {
+          shooterName = document.getElementById('name').value ? document.getElementById('name').value : socket.id;
+          socket.emit('create',{name:shooterName});
+
+          document.getElementById('resetBtn').style.display='none';
+          document.getElementById('resetBtn2').style.display='none';
+          document.getElementById('intro').style.display='none';
+          document.getElementById('randomBtn').style.display='none';
+          document.getElementById('privateBtn').style.display='none';
+          document.getElementById('actionbox').style.display='block';
+
+        });
+
+
+
+        socket.on('message', function (data) {
+                  console.log(data);
+                  document.getElementById('billboard').innerHTML = data.message;
+        });
+
+        socket.on('roomCreated',function (data){
+          document.getElementById('resetBtn').style.display='none';
+          document.getElementById('resetBtn2').style.display='none';
+          document.getElementById('randomBtn').style.display='none';
+          document.getElementById('privateBtn').style.display='none';
+          document.getElementById('billboard').innerHTML = 'Room '+data.room+' created.  Waiting for challenger.';
+        })
+
+
+        socket.on('shot first', function(data) {
+          document.getElementById('billboard2').innerHTML='';
+          document.getElementById('billboard').innerHTML = 'You shot first, '+data;
+          document.getElementById('shootBtn').style.display='none';
+          document.getElementById('resetBtn').style.display='inline-block';
+          document.getElementById('resetBtn2').style.display='inline-block';
+          socket.emit('reset');
+        })
+
+        socket.on('got shot', function(data) {
+          document.getElementById('billboard2').innerHTML='';
+          document.getElementById('billboard').innerHTML = 'You got shot by '+data;
+          document.getElementById('shootBtn').style.display='none';
+          document.getElementById('resetBtn').style.display='inline-block';
+          document.getElementById('resetBtn2').style.display='inline-block';
+          socket.emit('reset');
+        })  
+
+        socket.on('random-join',function(){
+          document.getElementById('resetBtn').style.display='none';
+          document.getElementById('resetBtn2').style.display='none';
+          document.getElementById('shootBtn').style.display='inline-block';
+          document.getElementById('randomBtn').style.display='none';
+          document.getElementById('privateBtn').style.display='none';
+          document.getElementById('billboard').innerHTML = 'GET READY!!!!';
+          document.getElementById('billboard2').innerHTML='';
+        })
+		
+		
+		
+		socket.on('upd', function(msg){
+        console.log('update received.');
+        switch (msg[0]) {
+                case 'init':
+                  //bg_a.pause();
+                  //  intro_a.play();
+                   // $('#output').show();
+                    //$('#output').css('width: 100%');
+                    //$('#output').css('height: 70%;');
+                    //textFit($('#output'),{minFontSize:20, maxFontSize: 100, alignHoriz: true, alignVert: true});
+                    //$('#output').html("Ready?");
+					document.getElementById('billboard').innerHTML='Ready??';
+					document.getElementById('resetBtn').style.display='none';
+          document.getElementById('resetBtn2').style.display='none';
+					document.getElementById('shootBtn').style.display='none';
+					document.getElementById('randomBtn').style.display='none';
+					document.getElementById('privateBtn').style.display='none';
+                    //textFit($('#output'),{minFontSize:20, maxFontSize: 100, alignHoriz: true, alignVert: true});
+                    //$('#shooter2').show();
+					
+                    break;
+
+                case 'draw_rdy':
+                    console.log('data: '+msg[1]);
+                    //start_a.play();                   
+                    //$('#fireBtn').show();
+                    //$('#output').html("DRAW!");
+					document.getElementById('resetBtn').style.display='none';
+          document.getElementById('resetBtn2').style.display='none';
+					document.getElementById('shootBtn').style.display='inline-block';
+					document.getElementById('randomBtn').style.display='none';
+					document.getElementById('privateBtn').style.display='none';
+					document.getElementById('billboard2').innerHTML='DRAW!';
+                    
+					break;
+
+                case 'timer':
+                    var truncTime = msg[1];
+                    //$('#output').html(truncTime.toString().substr(0,3));
+					document.getElementById('billboard').innerHTML=truncTime.toString().substr(0,3);
+                    //textFit($('#output'),{minFontSize:20, maxFontSize: 100, alignHoriz: true, alignVert: true});
+                    }
+      });
+		
+
+        socket.on('roomlist',function(data){
+            for (key in data){
+              if (rSel.options[i]) {
+                for (var i=0; i<rSel.length; i++){
+                  
+                      if (rSel.options[i].value == key) { 
+                        break; 
+                      } 
+                      else{
+                        var option = document.createElement("option");
+                        option.value = key;
+                        option.text = key;
+                        rSel.appendChild(option);
+                      }
+                }
+              }
+              else{
+                  var option = document.createElement("option");
+                  option.value = key;
+                  option.text = key;
+                  rSel.appendChild(option);
+                }
+            }
+          
+        })
+
+      }
+
+      function shoot(){
+          socket.emit('shot');
+      }
+
+      function reset(){
+        socket.emit('create',{name:shooterName});
+        };
+
+        function reset2(){
+        location.reload();
+        };
+
+      function tst(){
+        socket.emit('reset');
+      };
+
+      function join(){
+        if (document.getElementById('room').value) {
+          var jroom = document.getElementById('room').value;
+          socket.emit('join',{room:jroom});
+        }
+        else{
+          alert('type arena name.');
+        }
+        
+      };
+
+
+      </script>
+    </body>
+</html>
