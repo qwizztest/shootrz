@@ -2,7 +2,7 @@
   "name": "shootout",
   "version": "1.0.0",
   "description": "QuickDraw Shootout game",
-  "main": "app.js",
+  "main": "maain.js",
   "dependencies": {
     "client-sessions": "^0.7.0",
     "cookie-parser": "^1.4.0",
@@ -12,7 +12,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
   },
   "repository": {
     "type": "git",
